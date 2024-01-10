@@ -106,6 +106,7 @@ export default StyleSheet.create({
   safeView: {
     flex: 1,
     backgroundColor: BaseColor.whiteColor,
-    ...(Platform.OS === 'android' ? {paddingVertical: 10} : {}),
+    paddingTop: 10,
+    // ...(Platform.OS === 'android' ? {paddingVertical: 10} : {}),
   },
 });

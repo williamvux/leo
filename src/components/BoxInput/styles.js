@@ -5,6 +5,7 @@ export default StyleSheet.create({
   input: {
     borderRadius: 2,
     paddingVertical: 3,
+    color: BaseColor.lightBlackColor,
     backgroundColor:
       Platform.OS === 'ios'
         ? BaseColor.lightGrayColor

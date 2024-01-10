@@ -1,9 +1,10 @@
 import React, {useRef, useState} from 'react';
 import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
-import {BaseStyle} from '../../styles';
+import {BaseColor, BaseStyle} from '../../styles';
 import styles from './styles';
 import {BoxInput, Header, ImageTheme, Spacer} from '../../components';
 import {ScrollView} from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const YeuCauTuVan = props => {
   const {navigation} = props;
@@ -50,7 +51,7 @@ const YeuCauTuVan = props => {
             onPress={() => {
               navigation.pop();
             }}>
-            <Text>{'Back'}</Text>
+            <Icon name={'arrow-left'} size={20} color={BaseColor.themeColor} />
           </TouchableOpacity>,
         ]}
       />

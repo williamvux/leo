@@ -5,6 +5,8 @@ export default StyleSheet.create({
   btnSuDung: {
     backgroundColor: BaseColor.themeColor,
     paddingVertical: 10,
+    marginHorizontal: 10,
+    marginBottom: 5,
     ...BaseStyle.row,
     ...BaseStyle.trungTam,
   },
