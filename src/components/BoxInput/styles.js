@@ -4,7 +4,7 @@ import {BaseColor} from '../../styles';
 export default StyleSheet.create({
   input: {
     borderRadius: 2,
-    paddingVertical: 3,
+    paddingVertical: 5,
     color: BaseColor.lightBlackColor,
     backgroundColor:
       Platform.OS === 'ios'

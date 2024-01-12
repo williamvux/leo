@@ -118,7 +118,7 @@ const InformationForm = props => {
         </View>
       </ScrollView>
       <TouchableOpacity onPress={handleSuDung} style={styles.btnSuDung}>
-        <Text style={styles.textSuDung}>{'Sử dụng'}</Text>
+        <Text style={styles.textSuDung}>{'Nhập thông tin đơn hàng'}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
