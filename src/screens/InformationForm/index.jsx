@@ -1,30 +1,48 @@
-import React, {useRef, useState} from 'react';
-import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
-import {BoxInput, HeaderLogo, ImageTheme} from '../../components';
-import {BaseStyle} from '../../styles';
+import React, {useCallback, useContext, useRef, useState} from 'react';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {
+  BoxInput,
+  HeaderLogo,
+  ImageTheme,
+  ShowComponent,
+} from '../../components';
+import {BaseColor, BaseStyle} from '../../styles';
 import styles from './styles';
 import {ScrollView} from 'react-native-gesture-handler';
+import {MainContext} from '../../context';
+import {getDeviceId} from 'react-native-device-info';
+import CustomerAction from '../../actions/customer_action';
+import {connect} from 'react-redux';
+import {setData} from '../../config/asyncStorage';
 
 const InformationForm = props => {
+  const {navigation, getProfileCustomer} = props;
+  const Context = useContext(MainContext);
+  const [, setValid] = useState(true);
+  const [isLoadingBtnCustomer, setIsLoadingBtnCustomer] = useState(false);
   const errorMessages = useRef({
     name: null,
     phone: null,
     email: null,
     code: null,
   });
-
   const formValue = useRef({
     name: null,
     phone: null,
     email: null,
     code: null,
   });
-  const [isValid, setValid] = useState(true);
+
   const setIsValid = () => {
     const date = Date.now();
     setValid(date);
   };
-  const {navigation} = props;
   const onChangeName = text => {
     errorMessages.current.name = !text ? 'Tên không để trống' : null;
     formValue.current.name = text;
@@ -53,21 +71,42 @@ const InformationForm = props => {
     navigation.navigate('YeuCauTuVan');
   };
 
-  const handleSuDung = () => {
+  const handleSuDung = useCallback(() => {
     const {code, name, phone, email} = formValue.current;
     if (code && name && phone && email && email.includes('@')) {
       setIsValid(true);
-      setTimeout(() => {
-        navigation.navigate('MeasureForm');
-      }, 500);
+      const device_id = getDeviceId();
+      getProfileCustomer({
+        device_id,
+        account_phone: phone,
+        account_email: email,
+        full_name: name,
+        code_referral: code,
+        callback: response => {
+          setIsLoadingBtnCustomer(false);
+          setData('userInfo', {
+            device_id,
+            account_phone: phone,
+            full_name: name,
+            account_name: name,
+            code_referral: code,
+            account_email: email,
+          }).then(() => {
+            navigation.navigate('MeasureForm');
+          });
+        },
+      });
     } else {
       onChangeCode(code);
       onChangeEmail(email);
       onChangeName(name);
       onChangePhone(phone);
       setIsValid(false);
+      setTimeout(() => {
+        setIsLoadingBtnCustomer(false);
+      }, 200);
     }
-  };
+  }, [getProfileCustomer, navigation]);
 
   return (
     <SafeAreaView style={BaseStyle.safeView}>
@@ -83,7 +122,6 @@ const InformationForm = props => {
             title={'Họ tên'}
             onChange={text => {
               onChangeName(text);
-              // setIsValid(!!text);
             }}
             required
             errorMessage={errorMessages.current.name}
@@ -92,7 +130,6 @@ const InformationForm = props => {
             title={'Địa chỉ email'}
             onChange={text => {
               onChangeEmail(text);
-              // setIsValid(!!text);
             }}
             required
             errorMessage={errorMessages.current.email}
@@ -101,27 +138,46 @@ const InformationForm = props => {
             title={'Số điện thoại'}
             onChange={text => {
               onChangePhone(text);
-              // setIsValid(!!text);
             }}
             required
+            keyboardType={'numeric'}
             errorMessage={errorMessages.current.phone}
           />
           <BoxInput
             title={'Mã giới thiệu'}
             onChange={text => {
               onChangeCode(text);
-              // setIsValid(!!text);
             }}
             required
             errorMessage={errorMessages.current.code}
           />
         </View>
       </ScrollView>
-      <TouchableOpacity onPress={handleSuDung} style={styles.btnSuDung}>
-        <Text style={styles.textSuDung}>{'Nhập thông tin đơn hàng'}</Text>
+      <TouchableOpacity
+        onPress={() => {
+          if (!isLoadingBtnCustomer) {
+            handleSuDung();
+            setIsLoadingBtnCustomer(true);
+          }
+        }}
+        style={styles.btnSuDung}>
+        <View style={[BaseStyle.row, BaseStyle.aCenter, BaseStyle.gap(10)]}>
+          <Text style={styles.textSuDung}>{'Nhập thông tin đơn hàng'}</Text>
+          <ShowComponent condition={isLoadingBtnCustomer}>
+            <ActivityIndicator size={'small'} color={BaseColor.whiteColor} />
+          </ShowComponent>
+        </View>
       </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
-export default InformationForm;
+const mapStateToProps = state => {
+  return {};
+};
+
+const mapDispatch = {
+  getProfileCustomer: CustomerAction.actionCustomer.getProfileCustomer,
+};
+
+export default connect(mapStateToProps, mapDispatch)(InformationForm);

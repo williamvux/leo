@@ -1,21 +1,26 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
 import {
   BoxInput,
+  Header,
   HeaderLogo,
   ImageTheme,
   RadioButton,
   ShowComponent,
 } from '../../components';
-import {BaseStyle} from '../../styles';
+import {BaseColor, BaseStyle} from '../../styles';
 import styles from './styles';
 import {ScrollView} from 'react-native-gesture-handler';
+import {MainContext} from '../../context';
+import {getData} from '../../config/asyncStorage';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const MeasureForm = props => {
+  const {accountUser} = useContext(MainContext);
   const values = useMemo(
     () => ({
-      theokg: 'theokg',
-      theokhoi: 'theokhoi',
+      theokg: 'kg',
+      theokhoi: 'khoi',
     }),
     [],
   );
@@ -32,13 +37,24 @@ const MeasureForm = props => {
     rong: null,
     cao: null,
   });
-  const [isValid, setValid] = useState(true);
+  const [, setValid] = useState(true);
+  const [isLoadingThanhTien, setIsLoadingThanhTien] = useState(false);
   const setIsValid = () => {
     const date = Date.now();
     setValid(date);
   };
   const {navigation} = props;
   const [selected, setSelected] = useState(values.theokg);
+  const [accountName, setAccoutName] = useState(accountUser.full_name);
+
+  useEffect(() => {
+    if (!accountUser || !accountUser.full_name) {
+      getData('userInfo').then(user => {
+        setAccoutName(user.full_name);
+      });
+    }
+  }, [accountUser]);
+
   const onChangeLoaiTinh = text => {
     setSelected(text);
   };
@@ -67,23 +83,18 @@ const MeasureForm = props => {
     if (selected === values.theokg) {
       if (kg) {
         setIsValid(true);
-        setTimeout(() => {
-          navigation.navigate('InformationForm');
-        }, 500);
       } else {
         onChangeKG(kg);
         setIsValid(false);
       }
     } else if (selected === values.theokhoi) {
-      if (dai && rong && cao) {
+      if (dai && rong && cao && kg) {
         setIsValid(true);
-        setTimeout(() => {
-          navigation.navigate('InformationForm');
-        }, 500);
       } else {
         onChangeDai(dai);
         onChangeRong(rong);
         onChangeCao(cao);
+        onChangeKG(kg);
         setIsValid(false);
       }
     }
@@ -97,6 +108,16 @@ const MeasureForm = props => {
         </View>
         <View style={BaseStyle.pd(10)}>
           <ImageTheme />
+        </View>
+        <View>
+          <Header
+            title={accountName}
+            right={[
+              <TouchableOpacity>
+                <Icon name={'edit'} color={BaseColor.themeColor} size={20} />
+              </TouchableOpacity>,
+            ]}
+          />
         </View>
         <View style={[BaseStyle.f1, BaseStyle.ph10]}>
           <View style={[BaseStyle.pv10]}>
@@ -135,6 +156,16 @@ const MeasureForm = props => {
               <View style={BaseStyle.mv10}>
                 <Text style={styles.textNhapTheo}>{'Nhập Theo khối'}</Text>
               </View>
+              <BoxInput
+                title={'Số Kg'}
+                keyboardType={'numeric'}
+                onChange={text => {
+                  onChangeKG(text);
+                  // setIsValid(!!text);
+                }}
+                required
+                errorMessage={errorMessages.current.kg}
+              />
               <BoxInput
                 title={'Chiều rộng'}
                 keyboardType={'numeric'}

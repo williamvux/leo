@@ -8,16 +8,30 @@ import {MainProvider} from './context';
 import {ShowComponent} from './components';
 import FastImage from 'react-native-fast-image';
 import CTGLogo from './assets/ctg.png';
+import {persistor, store} from './store';
+import AppAction from './actions/app_action';
+import {Provider} from 'react-redux';
+import {PersistGate} from 'redux-persist/integration/react';
 
 const App = props => {
   const [isLoadingApp, setIsLoadingApp] = useState(true);
   useEffect(() => {
-    const timerId = setTimeout(() => {
-      setIsLoadingApp(false);
-    }, 2000);
+    let timerId;
+    store.dispatch({
+      type: AppAction.actions.GET_CONFIG,
+      payload: {
+        callback: response => {
+          timerId = setTimeout(() => {
+            setIsLoadingApp(false);
+          }, 1000);
+        },
+      },
+    });
 
     return () => {
-      clearTimeout(timerId);
+      if (timerId) {
+        clearTimeout(timerId);
+      }
     };
   }, []);
   return (
@@ -29,13 +43,17 @@ const App = props => {
           </View>
           <Text style={styles.text}>{'Design by  unitedexpress'}</Text>
         </View>
-        <GestureHandlerRootView style={BaseStyle.f1}>
-          <NavigationContainer>
-            <MainProvider>
-              <NavigationTabs />
-            </MainProvider>
-          </NavigationContainer>
-        </GestureHandlerRootView>
+        <Provider store={store}>
+          <PersistGate persistor={persistor}>
+            <GestureHandlerRootView style={BaseStyle.f1}>
+              <NavigationContainer>
+                <MainProvider>
+                  <NavigationTabs />
+                </MainProvider>
+              </NavigationContainer>
+            </GestureHandlerRootView>
+          </PersistGate>
+        </Provider>
       </ShowComponent>
     </SafeAreaView>
   );
