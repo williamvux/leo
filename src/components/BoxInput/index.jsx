@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Text, TextInput, View} from 'react-native';
 import Spacer from '../Spacer';
 import styles from './styles';
@@ -16,8 +16,18 @@ const BoxInput = ({
   required = false,
   initialValue = '',
   canEdit = true,
+  modifyInput,
 }) => {
   const [value, setValue] = useState(initialValue);
+  useEffect(() => {
+    if (modifyInput) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      modifyInput = modify;
+    }
+  }, [modify, modifyInput]);
+  const modify = useCallback((string = '') => {
+    setValue(string);
+  }, []);
   return (
     <View>
       <View style={BaseStyle.row}>
