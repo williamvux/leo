@@ -48,6 +48,7 @@ const YeuCauTuVan = props => {
         title={'Yêu cầu tư vấn'}
         left={[
           <TouchableOpacity
+            key={'arrow-left'}
             onPress={() => {
               navigation.pop();
             }}>

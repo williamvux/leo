@@ -25,7 +25,7 @@ import AppAction from '../../actions/app_action';
 const InformationForm = props => {
   const {navigation, getProfileCustomer, getConfig} = props;
   const Context = useContext(MainContext);
-  const {accountUser, define_text, setAccountId} = Context;
+  const {accountUser, define_text, setRefresh} = Context;
   const [, setValid] = useState(true);
   const [isLoadingBtnCustomer, setIsLoadingBtnCustomer] = useState(false);
   const errorMessages = useRef({
@@ -85,14 +85,13 @@ const InformationForm = props => {
         full_name: name,
         code_referral: code,
         callback: response => {
-          console.log(88, response.data);
           if (response.code === 500000) {
             setData('userInfo', {...response.data, account_phone: phone}).then(
               () => {
                 getConfig({
                   callback: () => {
                     console.log('Login success');
-                    setAccountId(response.data.account_id);
+                    setRefresh(Date.now());
                     navigation.navigate('MeasureForm');
                   },
                 });
@@ -112,7 +111,7 @@ const InformationForm = props => {
         setIsLoadingBtnCustomer(false);
       }, 200);
     }
-  }, [getConfig, getProfileCustomer, navigation, setAccountId]);
+  }, [getConfig, getProfileCustomer, navigation, setRefresh]);
 
   return (
     <SafeAreaView style={BaseStyle.safeView}>

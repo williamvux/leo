@@ -4,14 +4,14 @@ import {store} from '../store';
 const MainContext = createContext();
 const {Provider} = MainContext;
 const MainProvider = props => {
-  const [accountId, setAccountId] = useState('');
+  const [refresh, setRefresh] = useState(Date.now());
   const {application} = store.getState();
   useEffect(() => {
     console.log('hehfkdjhfkasjdhfkasdjhflkasdj');
     console.log(8, JSON.stringify(application));
-  }, [accountId, application]);
+  }, [refresh, application]);
   return (
-    <Provider value={{accountId, setAccountId, ...application}}>
+    <Provider value={{refresh, setRefresh, ...application}}>
       {props.children}
     </Provider>
   );
