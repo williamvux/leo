@@ -27,4 +27,7 @@ export default StyleSheet.create({
     fontSize: 16,
     color: BaseColor.themeColor,
   },
+  disable: {
+    color: BaseColor.lightGrayColor,
+  },
 });

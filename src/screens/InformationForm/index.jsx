@@ -20,10 +20,12 @@ import {getDeviceId} from 'react-native-device-info';
 import CustomerAction from '../../actions/customer_action';
 import {connect} from 'react-redux';
 import {setData} from '../../config/asyncStorage';
+import AppAction from '../../actions/app_action';
 
 const InformationForm = props => {
-  const {navigation, getProfileCustomer} = props;
+  const {navigation, getProfileCustomer, getConfig} = props;
   const Context = useContext(MainContext);
+  const {accountUser, define_text, setAccountId} = Context;
   const [, setValid] = useState(true);
   const [isLoadingBtnCustomer, setIsLoadingBtnCustomer] = useState(false);
   const errorMessages = useRef({
@@ -33,10 +35,10 @@ const InformationForm = props => {
     code: null,
   });
   const formValue = useRef({
-    name: null,
-    phone: null,
-    email: null,
-    code: null,
+    name: accountUser.full_name,
+    phone: accountUser.account_phone,
+    email: accountUser.account_email,
+    code: accountUser.code_referral,
   });
 
   const setIsValid = () => {
@@ -83,17 +85,21 @@ const InformationForm = props => {
         full_name: name,
         code_referral: code,
         callback: response => {
+          console.log(88, response.data);
+          if (response.code === 500000) {
+            setData('userInfo', {...response.data, account_phone: phone}).then(
+              () => {
+                getConfig({
+                  callback: () => {
+                    console.log('Login success');
+                    setAccountId(response.data.account_id);
+                    navigation.navigate('MeasureForm');
+                  },
+                });
+              },
+            );
+          }
           setIsLoadingBtnCustomer(false);
-          setData('userInfo', {
-            device_id,
-            account_phone: phone,
-            full_name: name,
-            account_name: name,
-            code_referral: code,
-            account_email: email,
-          }).then(() => {
-            navigation.navigate('MeasureForm');
-          });
         },
       });
     } else {
@@ -106,7 +112,7 @@ const InformationForm = props => {
         setIsLoadingBtnCustomer(false);
       }, 200);
     }
-  }, [getProfileCustomer, navigation]);
+  }, [getConfig, getProfileCustomer, navigation, setAccountId]);
 
   return (
     <SafeAreaView style={BaseStyle.safeView}>
@@ -119,7 +125,8 @@ const InformationForm = props => {
         </View>
         <View style={[BaseStyle.f1, BaseStyle.ph10, BaseStyle.pv10]}>
           <BoxInput
-            title={'Họ tên'}
+            title={define_text.txt_full_name}
+            initialValue={accountUser.full_name}
             onChange={text => {
               onChangeName(text);
             }}
@@ -127,28 +134,32 @@ const InformationForm = props => {
             errorMessage={errorMessages.current.name}
           />
           <BoxInput
-            title={'Địa chỉ email'}
+            title={define_text.txt_email}
             onChange={text => {
               onChangeEmail(text);
             }}
+            initialValue={accountUser.account_email}
             required
             errorMessage={errorMessages.current.email}
           />
           <BoxInput
-            title={'Số điện thoại'}
+            title={define_text.txt_phone}
             onChange={text => {
               onChangePhone(text);
             }}
+            initialValue={accountUser.account_phone}
             required
             keyboardType={'numeric'}
             errorMessage={errorMessages.current.phone}
           />
           <BoxInput
-            title={'Mã giới thiệu'}
+            title={define_text.txt_code_referral}
             onChange={text => {
               onChangeCode(text);
             }}
+            initialValue={accountUser.code_referral}
             required
+            canEdit={!accountUser.code_referral}
             errorMessage={errorMessages.current.code}
           />
         </View>
@@ -162,7 +173,9 @@ const InformationForm = props => {
         }}
         style={styles.btnSuDung}>
         <View style={[BaseStyle.row, BaseStyle.aCenter, BaseStyle.gap(10)]}>
-          <Text style={styles.textSuDung}>{'Nhập thông tin đơn hàng'}</Text>
+          <Text style={styles.textSuDung}>
+            {define_text.bttn_info_customer}
+          </Text>
           <ShowComponent condition={isLoadingBtnCustomer}>
             <ActivityIndicator size={'small'} color={BaseColor.whiteColor} />
           </ShowComponent>
@@ -178,6 +191,7 @@ const mapStateToProps = state => {
 
 const mapDispatch = {
   getProfileCustomer: CustomerAction.actionCustomer.getProfileCustomer,
+  getConfig: AppAction.actionApp.getConfig,
 };
 
 export default connect(mapStateToProps, mapDispatch)(InformationForm);

@@ -90,7 +90,7 @@ const Request = {
         memberUser.user_agent = apiConfiguration.user_agent;
         memberUser.device_id = apiConfiguration.device_id;
         memberUser.platform = Platform.OS;
-        console.log(`${API_URL}${url}\n`, JSON.stringify(payload));
+        // console.log(`${API_URL}${url}\n`, JSON.stringify(payload));
         const dataRequest = {
           method,
           url: `${API_URL}${url}`,

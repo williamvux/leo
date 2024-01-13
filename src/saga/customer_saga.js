@@ -9,14 +9,13 @@ export function* getProfileCustomer(action) {
       Request.callAPI,
       CustomerAction.endPoints.PROFILE_CUSTOMER.method,
       CustomerAction.endPoints.PROFILE_CUSTOMER.url,
-      action.payload,
+      action,
     );
     if (action.payload.callback) {
       action.payload.callback(results);
     }
     switch (results.code) {
       case responseCode.SUCCESS:
-        //
         break;
       default:
         yield put({

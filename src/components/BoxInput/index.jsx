@@ -14,8 +14,10 @@ const BoxInput = ({
   errorMessage,
   noOfLines = 1,
   required = false,
+  initialValue = '',
+  canEdit = true,
 }) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(initialValue);
   return (
     <View>
       <View style={BaseStyle.row}>
@@ -33,9 +35,14 @@ const BoxInput = ({
             onChange(text);
           }
         }}
+        editable={canEdit}
         keyboardType={keyboardType}
         placeholder={placeholder}
-        style={[styles.input, errorMessage ? styles.errorBox : BaseStyle.empty]}
+        style={[
+          styles.input,
+          !canEdit ? styles.disable : BaseStyle.empty,
+          errorMessage ? styles.errorBox : BaseStyle.empty,
+        ]}
         secureTextEntry={isSecure}
         numberOfLines={noOfLines}
         textAlignVertical={noOfLines > 1 ? 'top' : 'center'}

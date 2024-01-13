@@ -1,5 +1,12 @@
 import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   BoxInput,
   Header,
@@ -14,15 +21,17 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {MainContext} from '../../context';
 import {getData} from '../../config/asyncStorage';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import OrderAction from '../../actions/order_action';
+import {connect} from 'react-redux';
 
 const MeasureForm = props => {
-  const {accountUser} = useContext(MainContext);
+  const {accountUser, define_text} = useContext(MainContext);
   const values = useMemo(
     () => ({
-      theokg: 'kg',
-      theokhoi: 'khoi',
+      theokg: define_text.txt_loai_lo_kg,
+      theokhoi: define_text.txt_loai_lo_khoi,
     }),
-    [],
+    [define_text.txt_loai_lo_kg, define_text.txt_loai_lo_khoi],
   );
   const errorMessages = useRef({
     kg: null,
@@ -43,7 +52,7 @@ const MeasureForm = props => {
     const date = Date.now();
     setValid(date);
   };
-  const {navigation} = props;
+  const {navigation, createOrder} = props;
   const [selected, setSelected] = useState(values.theokg);
   const [accountName, setAccoutName] = useState(accountUser.full_name);
 
@@ -79,16 +88,20 @@ const MeasureForm = props => {
   };
 
   const handleThanhTien = () => {
+    setIsLoadingThanhTien(true);
     const {kg, dai, rong, cao} = formValue.current;
+    let canSend = false;
     if (selected === values.theokg) {
       if (kg) {
         setIsValid(true);
+        canSend = true;
       } else {
         onChangeKG(kg);
         setIsValid(false);
       }
     } else if (selected === values.theokhoi) {
       if (dai && rong && cao && kg) {
+        canSend = true;
         setIsValid(true);
       } else {
         onChangeDai(dai);
@@ -97,6 +110,25 @@ const MeasureForm = props => {
         onChangeKG(kg);
         setIsValid(false);
       }
+    }
+
+    if (canSend) {
+      createOrder({
+        info_order: {
+          type_order: selected,
+          kg,
+          cao: cao ?? '',
+          rong: rong ?? '',
+          dai: dai ?? '',
+        },
+        callback: response => {
+          console.log(117, response);
+          ToastAndroid.show('Success', ToastAndroid.LONG);
+          setIsLoadingThanhTien(false);
+        },
+      });
+    } else {
+      setIsLoadingThanhTien(false);
     }
   };
 
@@ -113,7 +145,11 @@ const MeasureForm = props => {
           <Header
             title={accountName}
             right={[
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('InformationForm');
+                }}
+                key={'edit'}>
                 <Icon name={'edit'} color={BaseColor.themeColor} size={20} />
               </TouchableOpacity>,
             ]}
@@ -125,8 +161,8 @@ const MeasureForm = props => {
               <RadioButton
                 defaultValue={values.theokg}
                 arrValues={[
-                  {label: 'Theo kg', value: values.theokg},
-                  {label: 'Theo khối', value: values.theokhoi},
+                  {label: define_text.txt_loai_lo_kg, value: values.theokg},
+                  {label: define_text.txt_loai_lo_khoi, value: values.theokhoi},
                 ]}
                 onChange={onChangeLoaiTinh}
               />
@@ -136,12 +172,11 @@ const MeasureForm = props => {
             <View key={values.theokg}>
               <View style={BaseStyle.mv10}>
                 <Text style={styles.textNhapTheo}>
-                  {'Nhập Theo khối lượng'}
+                  {define_text.txt_loai_lo_kg}
                 </Text>
               </View>
               <BoxInput
-                title={'Số Kg'}
-                keyboardType={'numeric'}
+                title={define_text.txt_kg}
                 onChange={text => {
                   onChangeKG(text);
                   // setIsValid(!!text);
@@ -154,11 +189,12 @@ const MeasureForm = props => {
           <ShowComponent condition={selected === values.theokhoi}>
             <View key={values.theokhoi}>
               <View style={BaseStyle.mv10}>
-                <Text style={styles.textNhapTheo}>{'Nhập Theo khối'}</Text>
+                <Text style={styles.textNhapTheo}>
+                  {define_text.txt_loai_lo_khoi}
+                </Text>
               </View>
               <BoxInput
-                title={'Số Kg'}
-                keyboardType={'numeric'}
+                title={define_text.txt_kg}
                 onChange={text => {
                   onChangeKG(text);
                   // setIsValid(!!text);
@@ -167,8 +203,7 @@ const MeasureForm = props => {
                 errorMessage={errorMessages.current.kg}
               />
               <BoxInput
-                title={'Chiều rộng'}
-                keyboardType={'numeric'}
+                title={define_text.txt_rong}
                 onChange={text => {
                   onChangeRong(text);
                   // setIsValid(!!text);
@@ -177,8 +212,7 @@ const MeasureForm = props => {
                 errorMessage={errorMessages.current.rong}
               />
               <BoxInput
-                title={'Chiều cao'}
-                keyboardType={'numeric'}
+                title={define_text.txt_cao}
                 onChange={text => {
                   onChangeCao(text);
                   // setIsValid(!!text);
@@ -187,8 +221,7 @@ const MeasureForm = props => {
                 errorMessage={errorMessages.current.cao}
               />
               <BoxInput
-                title={'Chiều dài'}
-                keyboardType={'numeric'}
+                title={define_text.txt_dai}
                 onChange={text => {
                   onChangeDai(text);
                   // setIsValid(!!text);
@@ -201,10 +234,23 @@ const MeasureForm = props => {
         </View>
       </ScrollView>
       <TouchableOpacity onPress={handleThanhTien} style={styles.btnSuDung}>
-        <Text style={styles.textSuDung}>{'Thành tiền'}</Text>
+        <View style={[BaseStyle.row, BaseStyle.aCenter, BaseStyle.gap(10)]}>
+          <Text style={styles.textSuDung}>{'Thành tiền'}</Text>
+          <ShowComponent condition={isLoadingThanhTien}>
+            <ActivityIndicator size={'small'} color={BaseColor.whiteColor} />
+          </ShowComponent>
+        </View>
       </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
-export default MeasureForm;
+const mapStateToProps = state => {
+  return {};
+};
+
+const mapDispatch = {
+  createOrder: OrderAction.actionOrder.createOrder,
+};
+
+export default connect(mapStateToProps, mapDispatch)(MeasureForm);

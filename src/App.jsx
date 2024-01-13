@@ -12,21 +12,45 @@ import {persistor, store} from './store';
 import AppAction from './actions/app_action';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
+import {setData} from './config/asyncStorage';
+import {
+  getDeviceType,
+  getUserAgent,
+  getIpAddress,
+  getUniqueId,
+} from 'react-native-device-info';
 
 const App = props => {
   const [isLoadingApp, setIsLoadingApp] = useState(true);
   useEffect(() => {
     let timerId;
-    store.dispatch({
-      type: AppAction.actions.GET_CONFIG,
-      payload: {
-        callback: response => {
-          timerId = setTimeout(() => {
-            setIsLoadingApp(false);
-          }, 1000);
-        },
-      },
-    });
+    getIpAddress()
+      .then(async ip => {
+        const device_id = await getUniqueId();
+        const apiConfiguration = {
+          deviceId: device_id,
+          device_id,
+          ip,
+          device_type: getDeviceType(),
+          user_agent: await getUserAgent(),
+        };
+        return setData('apiConfiguration', apiConfiguration);
+      })
+      .then(() => {
+        store.dispatch({
+          type: AppAction.actions.GET_CONFIG,
+          payload: {
+            callback: response => {
+              timerId = setTimeout(() => {
+                setIsLoadingApp(false);
+              }, 1000);
+            },
+          },
+        });
+      })
+      .catch(error => {
+        console.log(38, error);
+      });
 
     return () => {
       if (timerId) {

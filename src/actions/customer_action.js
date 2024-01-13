@@ -9,7 +9,7 @@ const actions = {
 const endPoints = {
   PROFILE_CUSTOMER: {
     method: 'POST',
-    url: '/profile-customer',
+    url: '/create-customer',
   },
 };
 

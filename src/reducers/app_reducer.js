@@ -5,6 +5,7 @@ const initialState = {};
 const AppReducer = (state = initialState, actions = {}) => {
   switch (actions.type) {
     case AppAction.actions.GET_CONFIG_SUCCESS: {
+      // console.log(899, JSON.stringify(actions));
       return {...state, ...actions.payload};
     }
     default: {
