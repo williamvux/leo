@@ -8,7 +8,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const YeuCauTuVan = props => {
   const {navigation} = props;
-  const [isValid, setValid] = useState(true);
+  const [, setValid] = useState(true);
   const setIsValid = () => {
     setValid(Date.now());
   };

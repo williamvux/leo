@@ -1,17 +1,13 @@
-import React, {createContext, useEffect, useState} from 'react';
+import React, {createContext, useState} from 'react';
 import {store} from '../store';
 
 const MainContext = createContext();
 const {Provider} = MainContext;
 const MainProvider = props => {
-  const [refresh, setRefresh] = useState(Date.now());
   const {application} = store.getState();
-  useEffect(() => {
-    console.log('hehfkdjhfkasjdhfkasdjhflkasdj');
-    console.log(8, JSON.stringify(application));
-  }, [refresh, application]);
+  const [accountUser, setAccountUser] = useState(application.accountUser ?? {});
   return (
-    <Provider value={{refresh, setRefresh, ...application}}>
+    <Provider value={{...application, accountUser, setAccountUser}}>
       {props.children}
     </Provider>
   );

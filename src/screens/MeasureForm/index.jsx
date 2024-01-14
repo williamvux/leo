@@ -19,13 +19,13 @@ import {BaseColor, BaseStyle} from '../../styles';
 import styles from './styles';
 import {ScrollView} from 'react-native-gesture-handler';
 import {MainContext} from '../../context';
-import {getData} from '../../config/asyncStorage';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import OrderAction from '../../actions/order_action';
 import {connect} from 'react-redux';
 
 const MeasureForm = props => {
   const {accountUser, define_text} = useContext(MainContext);
+  console.log(29, JSON.stringify(accountUser));
   const values = useMemo(
     () => ({
       theokg: define_text.txt_loai_lo_kg,
@@ -54,15 +54,6 @@ const MeasureForm = props => {
   };
   const {navigation, createOrder} = props;
   const [selected, setSelected] = useState(values.theokg);
-  const [accountName, setAccoutName] = useState(accountUser.full_name);
-
-  useEffect(() => {
-    if (!accountUser || !accountUser.full_name) {
-      getData('userInfo').then(user => {
-        setAccoutName(user.full_name);
-      });
-    }
-  }, [accountUser]);
 
   const onChangeLoaiTinh = text => {
     setSelected(text);
@@ -143,7 +134,7 @@ const MeasureForm = props => {
         </View>
         <View>
           <Header
-            title={accountName}
+            title={accountUser.full_name}
             right={[
               <TouchableOpacity
                 onPress={() => {

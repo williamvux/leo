@@ -20,12 +20,11 @@ import {getDeviceId} from 'react-native-device-info';
 import CustomerAction from '../../actions/customer_action';
 import {connect} from 'react-redux';
 import {setData} from '../../config/asyncStorage';
-import AppAction from '../../actions/app_action';
 
 const InformationForm = props => {
-  const {navigation, getProfileCustomer, getConfig} = props;
+  const {navigation, getProfileCustomer} = props;
   const Context = useContext(MainContext);
-  const {accountUser, define_text, setRefresh} = Context;
+  const {accountUser, define_text, setAccountUser} = Context;
   const [, setValid] = useState(true);
   const [isLoadingBtnCustomer, setIsLoadingBtnCustomer] = useState(false);
   const errorMessages = useRef({
@@ -78,6 +77,7 @@ const InformationForm = props => {
     if (code && name && phone && email && email.includes('@')) {
       setIsValid(true);
       const device_id = getDeviceId();
+      console.log(80, name);
       getProfileCustomer({
         device_id,
         account_phone: phone,
@@ -86,17 +86,16 @@ const InformationForm = props => {
         code_referral: code,
         callback: response => {
           if (response.code === 500000) {
-            setData('userInfo', {...response.data, account_phone: phone}).then(
-              () => {
-                getConfig({
-                  callback: () => {
-                    console.log('Login success');
-                    setRefresh(Date.now());
-                    navigation.navigate('MeasureForm');
-                  },
-                });
-              },
-            );
+            console.log(response.data);
+            const user = {
+              ...accountUser,
+              ...response.data,
+              account_phone: phone,
+            };
+            setAccountUser(user);
+            setData('userInfo', user).then(() => {
+              navigation.navigate('MeasureForm');
+            });
           }
           setIsLoadingBtnCustomer(false);
         },
@@ -111,7 +110,7 @@ const InformationForm = props => {
         setIsLoadingBtnCustomer(false);
       }, 200);
     }
-  }, [getConfig, getProfileCustomer, navigation, setRefresh]);
+  }, [accountUser, getProfileCustomer, navigation, setAccountUser]);
 
   return (
     <SafeAreaView style={BaseStyle.safeView}>
@@ -190,7 +189,6 @@ const mapStateToProps = state => {
 
 const mapDispatch = {
   getProfileCustomer: CustomerAction.actionCustomer.getProfileCustomer,
-  getConfig: AppAction.actionApp.getConfig,
 };
 
 export default connect(mapStateToProps, mapDispatch)(InformationForm);
