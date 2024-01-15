@@ -85,8 +85,8 @@ const InformationForm = props => {
         full_name: name,
         code_referral: code,
         callback: response => {
+          console.log(response);
           if (response.code === 500000) {
-            console.log(response.data);
             const user = {
               ...accountUser,
               ...response.data,
